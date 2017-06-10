@@ -1,7 +1,12 @@
 (defproject virtual_parser "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
+  :description "Cellbase annotation of VCF data via RESTful resource"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [semantic-csv "0.2.1-alpha1"]])
+  :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
+                 [org.clojure/data.json "0.2.6"]
+                 [clj-http "3.6.1"]
+                 [com.tbaldridge/odin "0.2.0"]
+                 [com.github.samtools/htsjdk "2.10.0"]]
+  :main virtual_parser.core)
+

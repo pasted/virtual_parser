@@ -1,4 +1,4 @@
-# virtual_parser
+# Virtual Parser
 
 Virtual panel parser for Cellbase annotated variants.
 
