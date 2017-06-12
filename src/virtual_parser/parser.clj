@@ -5,6 +5,6 @@
 
 (defn read-vcf-file
   "Reads in VCF format file returns a map"
-  [filename]
+   [filename]
   (VCFFileReader. (clojure.java.io/file filename))
   )
