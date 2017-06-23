@@ -1,6 +1,8 @@
 (ns virtual_parser.core
   (:require [virtual_parser.client :as cl]
-            [clojure.tools.cli :refer [parse-opts]]))
+            [virtual_parser.parser :as parser]
+            [clojure.tools.cli :refer [parse-opts]])
+  (:gen-class))
 
 (def cli-options
   [["-v" "--vcf FILEPATH" "VCF filepath"]
@@ -12,7 +14,9 @@
   [opts]
   (println opts)
   (println "Cellbase annotation of VCF data via RESTful resource")
-  (println (cl/query-cellbase :biotype 16 16244622 "C" "A"))
+  (let [{:keys [vcf genelist]} opts]
+    (parser/read-vcf-file vcf))
+  #_(println (cl/query-cellbase :biotype 16 16244622 "C" "A"))
   )
 
 (defn -main
