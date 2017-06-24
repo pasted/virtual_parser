@@ -9,5 +9,5 @@
                  [com.tbaldridge/odin "0.2.0"]
                  [com.github.samtools/htsjdk "2.10.0"]
                  [org.clojure/tools.cli "0.3.5"]]
+  :profiles {:uberjar {:aot :all}}
   :main virtual_parser.core)
-
