@@ -1,5 +1,7 @@
 (ns virtual_parser.parser
   "Parse VCF format file"
+  (:require [clojure.string :as str]
+            [clojure.set :as set])
   (:import (htsjdk.variant.vcf VCFFileReader)
            (java.io FileReader)
            (htsjdk.variant.variantcontext VariantContext)))
@@ -35,3 +37,8 @@
   "Returns VCF header"
   [^VCFFileReader filereader]
   (.getInfoHeaderLines (.getFileHeader filereader)))
+
+(defn read-gene-list
+  "Reads list of gene symbols - one per line, returns a set"
+  [filename]
+  (set (str/split (slurp filename) #"\n")))
