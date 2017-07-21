@@ -3,7 +3,8 @@
             [clojure.string :as str]
             [clojure.data.json :as json]
             [com.tbaldridge.odin :as odin]
-            [com.tbaldridge.odin.contexts.data :as odin-data])
+            [com.tbaldridge.odin.contexts.data :as odin-data]
+            [me.raynes.conch :as sh])
   (:import (htsjdk.tribble.readers TabixReader)))
 
 (def uri-string-map
@@ -37,7 +38,21 @@
          (odin-data/query (as-json (get-annotation chromosome genomic-coordinate ref-allele alt-allele )) ?path field-name ?val) ?val)))
 
 (defn query-gnomad
-  "Use Tabix to retrieve Gnomad variant data"
+  "Use Tabix to retrieve GnomAD variant data"
   [url-str contig genomic-coordinates]
-  (iterator-seq (.query (TabixReader. url-str) "22" 17265182 17265182)))
+  (iterator-seq (.query (TabixReader. url-str) (str contig ":" genomic-coordinates))))
+
+(defn sh-query-gnomad
+  "Fall-over to shell command Tabix, require tabix to be installed in path"
+  [url-str contig genomic-coordinates]
+  (do
+    (sh/programs tabix)
+    (tabix url-str (str contig ":" genomic-coordinates))))
+
+(defn sh-return-gnomad-header
+  "Returns VCF header for GnomAD"
+  [url-str]
+  (do
+    (sh/programs tabix)
+    (tabix "-H" url-str )))
 

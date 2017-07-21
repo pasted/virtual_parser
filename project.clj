@@ -8,6 +8,7 @@
                  [clj-http "3.6.1"]
                  [com.tbaldridge/odin "0.2.0"]
                  [com.github.samtools/htsjdk "2.10.0"]
-                 [org.clojure/tools.cli "0.3.5"]]
+                 [org.clojure/tools.cli "0.3.5"]
+                 [me.raynes/conch "0.8.0"]]
   :profiles {:uberjar {:aot :all}}
   :main virtual_parser.core)
