@@ -3,7 +3,9 @@
             [clojure.string :as str]
             [clojure.data.json :as json]
             [com.tbaldridge.odin :as odin]
-            [com.tbaldridge.odin.contexts.data :as odin-data]))
+            [com.tbaldridge.odin.contexts.data :as odin-data]
+            [me.raynes.conch :as sh])
+  (:import (htsjdk.tribble.readers TabixReader)))
 
 (def uri-string-map
   {:base-uri "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest"
@@ -15,20 +17,18 @@
 
 (defn get-annotation
   "Return Cellbase annotation on a variant by variant basis"
-  [chromosome genomic-coordinates ref alt]
+  [contig genomic-coordinates ref alt]
   (clj-http.client/get (str/join "/" [(get uri-string-map :base-uri)
                                       (get uri-string-map :version)
                                       (get uri-string-map :organism)
                                       (get uri-string-map :query-type)
-                                      #_"16:16244622:C:A"
-                                      (str/join ":" [chromosome genomic-coordinates ref alt] )
+                                      (str/join ":" [contig genomic-coordinates ref alt] )
                                       (get uri-string-map :query-type-suffix)] )))
 (defn as-json
   "Convert response to JSON"
   [response]
   (json/read-str (:body response)
-                 :key-fn keyword)
-  )
+                 :key-fn keyword))
 
 (defn query-cellbase
   "Use Odin to retrieve values from nested map"
@@ -36,4 +36,23 @@
 
   (set (odin/for-query
          (odin-data/query (as-json (get-annotation chromosome genomic-coordinate ref-allele alt-allele )) ?path field-name ?val) ?val)))
+
+(defn query-gnomad
+  "Use Tabix to retrieve GnomAD variant data"
+  [url-str contig genomic-coordinates]
+  (iterator-seq (.query (TabixReader. url-str) (str contig ":" genomic-coordinates))))
+
+(defn sh-query-gnomad
+  "Fall-over to shell command Tabix, require tabix to be installed in path"
+  [url-str contig genomic-coordinates]
+  (do
+    (sh/programs tabix)
+    (tabix url-str (str contig ":" genomic-coordinates))))
+
+(defn sh-return-gnomad-header
+  "Returns VCF header for GnomAD"
+  [url-str]
+  (do
+    (sh/programs tabix)
+    (tabix "-H" url-str )))
 

@@ -42,3 +42,9 @@
   "Reads list of gene symbols - one per line, returns a set"
   [filename]
   (set (str/split (slurp filename) #"\n")))
+
+(defn parse-gnomad-entry
+  "Consumes row from Gnomad VCF, returns map of genomic information and frequencies"
+  [gnomad-entry]
+  (let [genomic-info (str/split gnomad-entry #"\s+")
+        frequency-info (str/split (get genomic-info 7) #";")]))
