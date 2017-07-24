@@ -7,23 +7,37 @@
             [me.raynes.conch :as sh])
   (:import (htsjdk.tribble.readers TabixReader)))
 
-(def uri-string-map
+(def cellbase-uri-string-map
   {:base-uri "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest"
    :version "v3"
    :organism "hsapiens"
    :query-type "genomic/variant"
-   :query-type-suffix "annotation?type=json"
+   :response-type-suffix "annotation?type=json"
    })
 
-(defn get-annotation
+(def hgnc-uri-string-map
+  {:base-uri "http://rest.genenames.org"
+   :query-type "search/symbol"
+   :response-type {:accept :json}}
+  )
+
+(defn get-cellbase-annotation
   "Return Cellbase annotation on a variant by variant basis"
   [contig genomic-coordinates ref alt]
-  (clj-http.client/get (str/join "/" [(get uri-string-map :base-uri)
-                                      (get uri-string-map :version)
-                                      (get uri-string-map :organism)
-                                      (get uri-string-map :query-type)
+  (clj-http.client/get (str/join "/" [(get cellbase-uri-string-map :base-uri)
+                                      (get cellbase-uri-string-map :version)
+                                      (get cellbase-uri-string-map :organism)
+                                      (get cellbase-uri-string-map :query-type)
                                       (str/join ":" [contig genomic-coordinates ref alt] )
-                                      (get uri-string-map :query-type-suffix)] )))
+                                      (get cellbase-uri-string-map :response-type-suffix)] )))
+
+(defn get-hgnc-annotation
+  "Return HGNC annotation for a given gene symbol"
+  [gene-symbol]
+  (clj-http.client/get (str/join "/" [(get hgnc-uri-string-map :base-uri)
+                                      (get hgnc-uri-string-map :query-type)
+                                      gene-symbol]) (get hgnc-uri-string-map :response-type)))
+
 (defn as-json
   "Convert response to JSON"
   [response]
@@ -35,7 +49,15 @@
   [field-name chromosome genomic-coordinate ref-allele alt-allele]
 
   (set (odin/for-query
-         (odin-data/query (as-json (get-annotation chromosome genomic-coordinate ref-allele alt-allele )) ?path field-name ?val) ?val)))
+         (odin-data/query (as-json (get-cellbase-annotation chromosome genomic-coordinate ref-allele alt-allele )) ?path field-name ?val) ?val)))
+
+(defn query-hgnc
+  "Query HGNC api and return entry or empty seq is symbol is an exact match for top HGNC hit"
+  [gene-symbol]
+  (let [response (:response (as-json (get-hgnc-annotation gene-symbol)))
+        max-score (:maxScore response)
+        top-hit (filter (fn [this-map] (if (= (:score this-map) max-score) this-map)) (:docs response))]
+    top-hit))
 
 (defn query-gnomad
   "Use Tabix to retrieve GnomAD variant data"
